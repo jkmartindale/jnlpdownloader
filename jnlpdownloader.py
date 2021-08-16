@@ -25,11 +25,14 @@ except ModuleNotFoundError:
 # Get all the arguments for the tool
 parser = argparse.ArgumentParser(prog='jnlpdownloader.py', 
 	formatter_class=argparse.ArgumentDefaultsHelpFormatter,
-	description='Download JAR files associated with a JNLP file',
-	epilog='Example: jnlpdownloader.py --link https://www.example.com/java/jnlp/sample.jnlp')
-parser.add_argument('--link', 
-	required=True,
+	description='Download JAR files associated with a JNLP file.',
+	epilog='Example: jnlpdownloader.py https://www.example.com/java/jnlp/sample.jnlp')
+link_group = parser.add_mutually_exclusive_group(required=True)
+link_group.add_argument('url',
+  nargs='?',
 	help='the full URL to the JNLP file (must include http(s)://')
+link_group.add_argument('--link',
+  help='same as <url> (for backwards compatibility)')
 parser.add_argument('--ntlmuser', 
 	default=None,
 	help='use NTLM authentication with this username (format of domain \\ username)')
@@ -54,6 +57,7 @@ parser.add_argument('--cookie',
 
 # Stick arguments in a variable and then create a session
 args = vars(parser.parse_args())
+start_url = args['url'] or args['link']
 r = ''
 session = requests.Session()
 
@@ -65,13 +69,13 @@ randDir = ''.join(random.SystemRandom().choice(string.ascii_lowercase + string.d
 if args['ntlmuser'] != None and args['ntlmpass'] != None:
   from requests_ntlm import HttpNtlmAuth
   session.auth = HttpNtlmAuth(args['ntlmuser'],args['ntlmpass'], session)
-  r = session.get(args['link'], verify=False)
+  r = session.get(start_url, verify=False)
 elif args['basicuser'] != None and args['basicpass'] != None:
   session.auth = HTTPBasicAuth(args['basicuser'],args['basicpass'])
-  r = session.get(args['link'], verify=False)
+  r = session.get(start_url, verify=False)
 elif args['digestuser'] != None and args['digestpass'] != None:
   session.auth = HTTPDigestAuth(args['digestuser'],args['digestpass'])
-  r = session.get(args['link'], verify=False)
+  r = session.get(start_url, verify=False)
 elif args['cookie'] != None:
   cookies = {}
 
@@ -98,9 +102,9 @@ elif args['cookie'] != None:
     else:
       cookies['jnlp'] = 'jnlpdownloader'
 
-  r = session.get(args['link'], cookies=cookies, verify=False)
+  r = session.get(start_url, cookies=cookies, verify=False)
 else:
-  r = session.get(args['link'], verify=False)
+  r = session.get(start_url, verify=False)
 
 # If the status code is not 200, the file was likely inaccessible so we exit
 if r.status_code != 200:
