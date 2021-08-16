@@ -4,14 +4,23 @@
 # 
 
 import argparse
-import xml.etree.ElementTree as ET
+import importlib
 import re
 import requests
 import string
+import sys
 import random
 import os
 from requests.auth import HTTPBasicAuth
 from requests.auth import HTTPDigestAuth
+
+# use lxml if available (for error recovery) but fallback to stdlib
+try:
+  ET = importlib.import_module('lxml.etree')
+  xml_parser = ET.XMLParser(recover=True)
+except ModuleNotFoundError:
+  from xml.etree import ElementTree as ET
+  xml_parser = ET.XMLParser()
 
 # Get all the arguments for the tool
 parser = argparse.ArgumentParser(prog='jnlpdownloader.py', 
@@ -103,19 +112,18 @@ xmltree = ''
 xmlroot = ''
 jnlpurl = ''
 
-# Attempt to read the JNLP XML, if this fails then exit
 try:
-  xmltree = ET.ElementTree(ET.fromstring(r.content))
-except:
-  print('[*] JNLP file was misformed, exiting.')
-  exit(0)
+  # Attempt to read the JNLP XML
+  xmltree = ET.ElementTree(ET.XML(r.content, xml_parser))
 
-# Get the XML document structure and pull out the main link
-try:
+  # Get the XML document structure and pull out the main link
   xmlroot = xmltree.getroot()
   jnlpurl = xmlroot.attrib['codebase']+'/'
-except:
+except Exception as exception:
+  print('[*]', exception)
   print('[*] JNLP file was misformed, exiting.')
+  if 'lxml' not in sys.modules:
+    print("[*] To enable automatic recovery from some XML errors, install the 'lxml' package with 'pip install lxml'")
   exit(0)
 
 # If the JNLP file was good, create directory to store JARs
