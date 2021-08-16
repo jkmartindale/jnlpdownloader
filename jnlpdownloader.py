@@ -95,6 +95,7 @@ else:
 
 # If the status code is not 200, the file was likely inaccessible so we exit
 if r.status_code != 200:
+  print('[*]', r.status_code, r.reason)
   print('[*] Link was inaccessible, exiting.')
   exit(0)
 
