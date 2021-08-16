@@ -4,7 +4,7 @@ jnlpdownloader is a Python script that takes a URL to a JNLP and downloads all t
 
 ## Requirements
 - requests  
-- requests_ntlm  
+- requests_ntlm (if using NTLM authentication)  
 
 ## Usage
 Download JAR files associated with a JNLP file:
