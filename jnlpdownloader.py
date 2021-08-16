@@ -12,7 +12,6 @@ import random
 import os
 from requests.auth import HTTPBasicAuth
 from requests.auth import HTTPDigestAuth
-from requests_ntlm import HttpNtlmAuth
 
 # Get all the arguments for the tool
 parser = argparse.ArgumentParser(prog='jnlpdownloader.py', 
@@ -55,6 +54,7 @@ randDir = ''.join(random.SystemRandom().choice(string.ascii_lowercase + string.d
 # Check to see if BASIC/DIGEST/NTLM/Cookie authentication is being performed
 # If so, pass credentials to session, if not, just connect to JNLP URL
 if args['ntlmuser'] != None and args['ntlmpass'] != None:
+  from requests_ntlm import HttpNtlmAuth
   session.auth = HttpNtlmAuth(args['ntlmuser'],args['ntlmpass'], session)
   r = session.get(args['link'], verify=False)
 elif args['basicuser'] != None and args['basicpass'] != None:
