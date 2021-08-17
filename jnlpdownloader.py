@@ -33,6 +33,9 @@ link_group.add_argument('url',
 	help='the full URL to the JNLP file (must include http(s)://')
 link_group.add_argument('--link',
   help='same as <url> (for backwards compatibility)')
+parser.add_argument('-k', '--insecure',
+  action='store_true',
+  help='disable server TLS certificate validation for downloads')
 parser.add_argument('--ntlmuser', 
 	default=None,
 	help='use NTLM authentication with this username (format of domain \\ username)')
@@ -61,6 +64,10 @@ start_url = args['url'] or args['link']
 r = ''
 session = requests.Session()
 
+if args['insecure']:
+  import urllib3
+  urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
 # Random value for directory creation
 randDir = ''.join(random.SystemRandom().choice(string.ascii_lowercase + string.digits) for _ in range(10))
 
@@ -69,13 +76,13 @@ randDir = ''.join(random.SystemRandom().choice(string.ascii_lowercase + string.d
 if args['ntlmuser'] != None and args['ntlmpass'] != None:
   from requests_ntlm import HttpNtlmAuth
   session.auth = HttpNtlmAuth(args['ntlmuser'],args['ntlmpass'], session)
-  r = session.get(start_url, verify=False)
+  r = session.get(start_url, verify=not args['insecure'])
 elif args['basicuser'] != None and args['basicpass'] != None:
   session.auth = HTTPBasicAuth(args['basicuser'],args['basicpass'])
-  r = session.get(start_url, verify=False)
+  r = session.get(start_url, verify=not args['insecure'])
 elif args['digestuser'] != None and args['digestpass'] != None:
   session.auth = HTTPDigestAuth(args['digestuser'],args['digestpass'])
-  r = session.get(start_url, verify=False)
+  r = session.get(start_url, verify=not args['insecure'])
 elif args['cookie'] != None:
   cookies = {}
 
@@ -102,9 +109,9 @@ elif args['cookie'] != None:
     else:
       cookies['jnlp'] = 'jnlpdownloader'
 
-  r = session.get(start_url, cookies=cookies, verify=False)
+  r = session.get(start_url, cookies=cookies, verify=not args['insecure'])
 else:
-  r = session.get(start_url, verify=False)
+  r = session.get(start_url, verify=not args['insecure'])
 
 # If the status code is not 200, the file was likely inaccessible so we exit
 if r.status_code != 200:

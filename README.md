@@ -9,7 +9,7 @@ jnlpdownloader is a Python script that takes a URL to a JNLP and downloads all t
 
 ## Usage
 ```
-usage: jnlpdownloader.py [-h] [--link LINK]
+usage: jnlpdownloader.py [-h] [--link LINK] [-k]
                          [--ntlmuser NTLMUSER] [--ntlmpass NTLMPASS]
                          [--basicuser BASICUSER] [--basicpass BASICPASS]
                          [--digestuser DIGESTUSER] [--digestpass DIGESTPASS]
@@ -24,6 +24,7 @@ positional arguments:
 optional arguments:
   -h, --help               show this help message and exit
   --link LINK              same as <url> (for backwards compatibility) (default: None)
+  -k, --insecure           disable server TLS certificate validation for downloads (default: False)
   --ntlmuser NTLMUSER      use NTLM authentication with this username
                            (format of domain \ username) (default: None)
   --ntlmpass NTLMPASS      use NTLM authentication with this password (default: None)
